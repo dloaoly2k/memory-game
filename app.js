@@ -1,6 +1,6 @@
 /**
  * Memory Card Game - Main Game Logic
- * Features: 5 difficulty levels, timer, move counter, scoring system, card matching, sound effects, player names
+ * Features: 3 difficulty levels, timer, move counter, scoring system, card matching, sound effects, player names, custom AOL images, background music
  */
 
 class MemoryGame {
@@ -18,35 +18,37 @@ class MemoryGame {
         this.canFlip = true;
         this.playerName = 'Guest';
         this.currentLevel = 1;
-        this.maxLevel = 5;
+        this.maxLevel = 3;
 
         // Sound system
         this.soundEnabled = true;
         this.volume = 0.7;
         this.sounds = {};
 
-        // Level configurations
+        // Music system
+        this.musicEnabled = false;
+        this.musicVolume = 0.5;
+
+        // Level configurations - 3 levels with custom grid sizes
         this.levelConfigs = {
-            1: { gridSize: 4, pairs: 8, description: 'Easy - 4x4 grid with 8 pairs (16 cards)' },
-            2: { gridSize: 6, pairs: 18, description: 'Medium - 6x6 grid with 18 pairs (36 cards)' },
-            3: { gridSize: 7, pairs: 24, description: 'Hard - 7x7 grid with 24 pairs (49 cards)' },
-            4: { gridSize: 8, pairs: 32, description: 'Expert - 8x8 grid with 32 pairs (64 cards)' },
-            5: { gridSize: 9, pairs: 40, description: 'Master - 9x9 grid with 40 pairs (81 cards)' }
+            1: { gridSize: 3, pairs: 3, description: 'Easy - 3 pairs (6 cards) - 3x2 grid' },
+            2: { gridSize: 4, pairs: 6, description: 'Medium - 6 pairs (12 cards) - 3x4 grid' },
+            3: { gridSize: 4, pairs: 8, description: 'Hard - 8 pairs (16 cards) - 4x4 grid' }
         };
 
-        // Extended card icons for higher levels (40 unique icons for level 5)
-        this.cardIcons = [
-            'fas fa-heart', 'fas fa-star', 'fas fa-diamond', 'fas fa-circle',
-            'fas fa-square', 'fas fa-triangle', 'fas fa-bolt', 'fas fa-gem',
-            'fas fa-moon', 'fas fa-sun', 'fas fa-cloud', 'fas fa-leaf',
-            'fas fa-fire', 'fas fa-water', 'fas fa-mountain', 'fas fa-tree',
-            'fas fa-car', 'fas fa-plane', 'fas fa-ship', 'fas fa-bicycle',
-            'fas fa-cat', 'fas fa-dog', 'fas fa-fish', 'fas fa-bird',
-            'fas fa-apple', 'fas fa-banana', 'fas fa-orange', 'fas fa-grape',
-            'fas fa-book', 'fas fa-pencil', 'fas fa-camera', 'fas fa-phone',
-            'fas fa-home', 'fas fa-key', 'fas fa-lock', 'fas fa-gift',
-            'fas fa-crown', 'fas fa-flag', 'fas fa-umbrella', 'fas fa-snowflake',
-            'fas fa-rocket', 'fas fa-robot', 'fas fa-ghost', 'fas fa-dragon'
+        // Custom AOL images for card fronts
+        this.customImages = [
+            'images/AOL132.png', 'images/AOL1285.png', 'images/AOL 960.png', 'images/AOL 801.png',
+            'images/AOL 5535.png', 'images/AOL 5418.png', 'images/AOL 5189.png', 'images/AOL 5164.png',
+            'images/AOL 5118.png', 'images/AOL 5079.png', 'images/AOL 4916.png', 'images/AOL 4753.png',
+            'images/AOL 4676.png', 'images/AOL 4149.png', 'images/AOL 3888.png', 'images/AOL 3849.png',
+            'images/AOL 3658.png', 'images/AOL 3577.png', 'images/AOL 357.png', 'images/AOL 3451.png',
+            'images/AOL 3355.png', 'images/AOL 3329.png', 'images/AOL 3310.png', 'images/AOL 3178.png',
+            'images/AOL 3123.png', 'images/AOL 2964.png', 'images/AOL 2511.png', 'images/AOL 2504.png',
+            'images/AOL 2225.png', 'images/AOL 2114.png', 'images/AOL 20.png', 'images/AOL 1908.png',
+            'images/AOL 1894.png', 'images/AOL 1520.png', 'images/AOL 1519.png', 'images/AOL 1421.png',
+            'images/AOL 1327.png', 'images/AOL 1252.png', 'images/AOL 1054.png', 'images/AOL 1044.png',
+            'images/AOL 1037.png', 'images/AOL2529.png'
         ];
 
         // DOM elements
@@ -57,7 +59,6 @@ class MemoryGame {
         this.levelDisplay = document.getElementById('level');
         this.startBtn = document.getElementById('start-btn');
         this.resetBtn = document.getElementById('reset-btn');
-        this.nextLevelBtn = document.getElementById('next-level-btn');
         this.gameOverModal = document.getElementById('game-over-modal');
         this.playAgainBtn = document.getElementById('play-again-btn');
         this.nextLevelBtnModal = document.getElementById('next-level-btn-modal');
@@ -73,18 +74,30 @@ class MemoryGame {
         this.volumeSlider = document.getElementById('volume-slider');
         this.volumeValue = document.getElementById('volume-value');
         
+        // Music control elements
+        this.musicToggleBtn = document.getElementById('music-toggle');
+        this.musicVolumeSlider = document.getElementById('music-volume-slider');
+        this.musicVolumeValue = document.getElementById('music-volume-value');
+        this.backgroundMusic = document.getElementById('background-music');
+        
         // Level selection elements
         this.levelButtons = document.querySelectorAll('.level-btn');
+        console.log('Found level buttons:', this.levelButtons.length);
+        this.levelButtons.forEach((btn, index) => {
+            console.log(`Level button ${index}:`, btn.dataset.level, btn.textContent);
+        });
         this.currentLevelDisplay = document.getElementById('current-level-display');
         this.levelDescription = document.getElementById('level-description');
         this.completedLevelDisplay = document.getElementById('completed-level');
         this.levelBonusDisplay = document.getElementById('level-bonus');
 
-        // Initialize the game
+        // Initialize the game - IMPORTANT: updateGameBoardClass must be called BEFORE initializeGame
+        this.updateGameBoardClass();
         this.initializeGame();
         this.initializeSounds();
         this.bindEvents();
         this.loadPlayerName();
+        this.loadMusicPreferences();
         this.updateLevelDisplay();
     }
 
@@ -328,8 +341,14 @@ class MemoryGame {
      * @param {string} soundName - Name of the sound to play
      */
     playSound(soundName) {
-        if (this.sounds[soundName]) {
-            this.sounds[soundName]();
+        try {
+            if (this.sounds[soundName]) {
+                this.sounds[soundName]();
+            } else {
+                console.log(`Sound not found: ${soundName}`);
+            }
+        } catch (error) {
+            console.warn(`Error playing sound ${soundName}:`, error);
         }
     }
 
@@ -407,15 +426,18 @@ class MemoryGame {
 
     /**
      * Set the current level
-     * @param {number} level - Level number (1-5)
+     * @param {number} level - Level number (1-3)
      */
     setLevel(level) {
+        console.log(`setLevel called with: ${level}, maxLevel: ${this.maxLevel}`);
         if (level >= 1 && level <= this.maxLevel) {
             this.currentLevel = level;
             this.updateLevelDisplay();
             this.updateGameBoardClass();
             this.resetGame();
             console.log(`Level set to: ${level}`);
+        } else {
+            console.log(`Invalid level: ${level}, must be between 1 and ${this.maxLevel}`);
         }
     }
 
@@ -441,8 +463,8 @@ class MemoryGame {
      * Update game board CSS class for responsive layout
      */
     updateGameBoardClass() {
-        // Remove all level classes
-        this.gameBoard.classList.remove('level-1', 'level-2', 'level-3', 'level-4', 'level-5');
+        // Remove all level classes (only 3 levels now)
+        this.gameBoard.classList.remove('level-1', 'level-2', 'level-3');
         // Add current level class
         this.gameBoard.classList.add(`level-${this.currentLevel}`);
     }
@@ -461,7 +483,7 @@ class MemoryGame {
         const pairsNeeded = config.pairs;
         
         // Get icons for current level
-        const levelIcons = this.cardIcons.slice(0, pairsNeeded);
+        const levelIcons = this.customImages.slice(0, pairsNeeded);
         
         // Create card pairs (duplicate each icon)
         const cardValues = [...levelIcons, ...levelIcons];
@@ -481,26 +503,42 @@ class MemoryGame {
 
     /**
      * Create a single card element with front and back faces
-     * @param {string} icon - Font Awesome icon class
+     * @param {string} imagePath - Path to the AOL image for card front
      * @param {number} index - Card index
      * @returns {HTMLElement} Card element
      */
-    createCard(icon, index) {
+    createCard(imagePath, index) {
         const card = document.createElement('div');
         card.className = 'card';
         card.dataset.index = index;
-        card.dataset.icon = icon;
+        card.dataset.image = imagePath;
 
-        // Create card front (shows icon)
+        // Create card front (shows AOL image)
         const cardFront = document.createElement('div');
         cardFront.className = 'card-front';
-        const iconElement = document.createElement('i');
-        iconElement.className = `card-icon ${icon}`;
-        cardFront.appendChild(iconElement);
+        const imgElement = document.createElement('img');
+        imgElement.src = imagePath;
+        imgElement.className = 'card-image';
+        imgElement.alt = `Card front ${index}`;
+        // Add error handling for missing images
+        imgElement.onerror = () => {
+            imgElement.style.display = 'none';
+            const fallbackIcon = document.createElement('i');
+            fallbackIcon.className = 'fas fa-question';
+            fallbackIcon.style.fontSize = '2rem';
+            fallbackIcon.style.color = '#ff0000';
+            cardFront.appendChild(fallbackIcon);
+        };
+        cardFront.appendChild(imgElement);
 
-        // Create card back (shows question mark)
+        // Create card back (shows AOL logo)
         const cardBack = document.createElement('div');
         cardBack.className = 'card-back';
+        const backImgElement = document.createElement('img');
+        backImgElement.src = 'images/card-back.png';
+        backImgElement.className = 'card-back-image';
+        backImgElement.alt = 'Card back';
+        cardBack.appendChild(backImgElement);
 
         // Append both faces to the card
         card.appendChild(cardFront);
@@ -536,13 +574,14 @@ class MemoryGame {
         this.startBtn.addEventListener('click', () => this.startGame());
         this.resetBtn.addEventListener('click', () => this.resetGame());
         this.playAgainBtn.addEventListener('click', () => this.playAgain());
-        this.nextLevelBtn.addEventListener('click', () => this.nextLevel());
         this.nextLevelBtnModal.addEventListener('click', () => this.nextLevel());
         
         // Level selection events
         this.levelButtons.forEach(btn => {
             btn.addEventListener('click', () => {
+                console.log('Level button clicked:', btn.dataset.level);
                 const level = parseInt(btn.dataset.level);
+                console.log('Parsed level:', level);
                 this.setLevel(level);
                 this.playSound('buttonClick');
             });
@@ -559,6 +598,10 @@ class MemoryGame {
         // Sound control events
         this.soundToggleBtn.addEventListener('click', () => this.toggleSound());
         this.volumeSlider.addEventListener('input', (e) => this.updateVolume(e.target.value));
+
+        // Music control events
+        this.musicToggleBtn.addEventListener('click', () => this.toggleMusic());
+        this.musicVolumeSlider.addEventListener('input', (e) => this.updateMusicVolume(e.target.value));
 
         // Close modal when clicking outside
         this.gameOverModal.addEventListener('click', (e) => {
@@ -583,6 +626,11 @@ class MemoryGame {
         
         // Play start sound
         this.playSound('gameStart');
+        
+        // Play background music if enabled
+        if (this.musicEnabled) {
+            this.playBackgroundMusic();
+        }
         
         console.log('Game started successfully');
     }
@@ -617,7 +665,7 @@ class MemoryGame {
             return;
         }
 
-        console.log(`Flipping card ${card.dataset.index} with icon ${card.dataset.icon}`);
+        console.log(`Flipping card ${card.dataset.index} with image ${card.dataset.image}`);
 
         // Play flip sound
         this.playSound('cardFlip');
@@ -639,9 +687,9 @@ class MemoryGame {
      */
     checkForMatch() {
         const [card1, card2] = this.flippedCards;
-        const match = card1.dataset.icon === card2.dataset.icon;
+        const match = card1.dataset.image === card2.dataset.image;
 
-        console.log(`Checking match: ${card1.dataset.icon} vs ${card2.dataset.icon} = ${match}`);
+        console.log(`Checking match: ${card1.dataset.image} vs ${card2.dataset.image} = ${match}`);
 
         if (match) {
             // Cards match - keep them flipped and update score
@@ -664,7 +712,11 @@ class MemoryGame {
         // Play match sound
         this.playSound('cardMatch');
         
+        // Keep cards flipped and add matched class for green glow
+        // Don't remove 'flipped' class - keep cards showing the AOL images
+        
         setTimeout(() => {
+            // Add matched class while keeping flipped class
             card1.classList.add('matched');
             card2.classList.add('matched');
             
@@ -695,9 +747,14 @@ class MemoryGame {
         // Play mismatch sound
         this.playSound('cardMismatch');
         
+        // Add mismatch class for red flash effect
+        card1.classList.add('mismatch');
+        card2.classList.add('mismatch');
+        
         setTimeout(() => {
-            card1.classList.remove('flipped');
-            card2.classList.remove('flipped');
+            // Remove mismatch class and flip cards back
+            card1.classList.remove('flipped', 'mismatch');
+            card2.classList.remove('flipped', 'mismatch');
             this.flippedCards = [];
             this.canFlip = true;
             
@@ -827,7 +884,6 @@ class MemoryGame {
         // Reset buttons
         this.startBtn.disabled = false;
         this.startBtn.innerHTML = '<i class="fas fa-play"></i> Start Game';
-        this.nextLevelBtn.style.display = 'none';
         
         // Hide modal if open
         this.hideGameOverModal();
@@ -835,7 +891,7 @@ class MemoryGame {
         // Reinitialize the game board
         this.initializeGame();
         
-        console.log('Game reset completed');
+        console.log(`Game reset completed for level ${this.currentLevel}`);
     }
 
     /**
@@ -857,6 +913,105 @@ class MemoryGame {
             this.setLevel(this.currentLevel + 1);
             this.startGame();
             console.log(`Advanced to level ${this.currentLevel}`);
+        } else {
+            console.log('All levels completed!');
+        }
+    }
+
+    /**
+     * Load music preferences from localStorage
+     */
+    loadMusicPreferences() {
+        console.log('Loading music preferences...');
+        const savedMusicEnabled = localStorage.getItem('memoryGameMusicEnabled');
+        if (savedMusicEnabled === 'true') {
+            this.musicEnabled = true;
+            this.musicToggleBtn.classList.remove('muted');
+            this.musicToggleBtn.querySelector('i').className = 'fas fa-volume-up';
+            this.musicToggleBtn.querySelector('span').textContent = 'Music: ON';
+            console.log('Music enabled from localStorage');
+        } else {
+            this.musicEnabled = false;
+            this.musicToggleBtn.classList.add('muted');
+            this.musicToggleBtn.querySelector('i').className = 'fas fa-volume-mute';
+            this.musicToggleBtn.querySelector('span').textContent = 'Music: OFF';
+            console.log('Music disabled from localStorage');
+        }
+
+        const savedMusicVolume = localStorage.getItem('memoryGameMusicVolume');
+        if (savedMusicVolume) {
+            this.musicVolume = parseFloat(savedMusicVolume);
+            this.musicVolumeSlider.value = this.musicVolume * 100;
+            this.musicVolumeValue.textContent = `${Math.round(this.musicVolume * 100)}%`;
+            console.log('Music volume loaded:', this.musicVolume);
+        }
+    }
+
+    /**
+     * Save music preferences to localStorage
+     */
+    saveMusicPreferences() {
+        localStorage.setItem('memoryGameMusicEnabled', this.musicEnabled);
+        localStorage.setItem('memoryGameMusicVolume', this.musicVolume);
+    }
+
+    /**
+     * Toggle music on/off
+     */
+    toggleMusic() {
+        console.log('toggleMusic called, current state:', this.musicEnabled);
+        this.musicEnabled = !this.musicEnabled;
+        this.musicToggleBtn.classList.toggle('muted');
+        this.musicToggleBtn.querySelector('i').className = this.musicEnabled ? 'fas fa-volume-up' : 'fas fa-volume-mute';
+        this.musicToggleBtn.querySelector('span').textContent = this.musicEnabled ? 'Music: ON' : 'Music: OFF';
+        this.saveMusicPreferences();
+        if (this.musicEnabled) {
+            console.log('Playing background music...');
+            this.playBackgroundMusic();
+        } else {
+            console.log('Stopping background music...');
+            this.stopBackgroundMusic();
+        }
+    }
+
+    /**
+     * Update music volume level
+     * @param {number} volume - Volume level (0-1)
+     */
+    updateMusicVolume(volume) {
+        this.musicVolume = volume / 100;
+        this.musicVolumeValue.textContent = `${Math.round(volume)}%`;
+        console.log(`Music volume updated: ${Math.round(volume)}%`);
+        this.saveMusicPreferences();
+        if (this.musicEnabled) {
+            this.playBackgroundMusic();
+        }
+    }
+
+    /**
+     * Play background music
+     */
+    playBackgroundMusic() {
+        console.log('playBackgroundMusic called');
+        if (!this.backgroundMusic) {
+            console.warn('Background music element not found');
+            return;
+        }
+        console.log('Background music element found, paused:', this.backgroundMusic.paused);
+        if (this.backgroundMusic.paused) {
+            this.backgroundMusic.volume = this.musicVolume;
+            console.log('Setting volume to:', this.musicVolume);
+            this.backgroundMusic.play().catch(e => console.warn('Error playing background music:', e));
+        }
+    }
+
+    /**
+     * Stop background music
+     */
+    stopBackgroundMusic() {
+        if (this.backgroundMusic) {
+            this.backgroundMusic.pause();
+            this.backgroundMusic.currentTime = 0; // Reset playback position
         }
     }
 }

@@ -37,7 +37,8 @@
                             <i class="fas fa-star"></i>
                         </div>
                         <span>Level 1</span>
-                        <small>4x4 (8 pairs)</small>
+                        <small>3 pairs</small>
+                        <small>3 x 2</small>
                     </button>
                     <button class="level-btn" data-level="2">
                         <div class="stars-container">
@@ -45,7 +46,8 @@
                             <i class="fas fa-star"></i>
                         </div>
                         <span>Level 2</span>
-                        <small>6x6 (18 pairs)</small>
+                        <small>6 pairs</small>
+                        <small>3 x 4</small>
                     </button>
                     <button class="level-btn" data-level="3">
                         <div class="stars-container">
@@ -54,33 +56,13 @@
                             <i class="fas fa-star"></i>
                         </div>
                         <span>Level 3</span>
-                        <small>7x7 (24 pairs)</small>
-                    </button>
-                    <button class="level-btn" data-level="4">
-                        <div class="stars-container">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <span>Level 4</span>
-                        <small>8x8 (32 pairs)</small>
-                    </button>
-                    <button class="level-btn" data-level="5">
-                        <div class="stars-container">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <span>Level 5</span>
-                        <small>9x9 (40 pairs)</small>
+                        <small>8 pairs</small>
+                        <small>4 x 4</small>
                     </button>
                 </div>
                 <div class="level-info">
                     <span id="current-level-display">Current Level: 1</span>
-                    <span id="level-description">Easy - 4x4 grid with 8 pairs (16 cards)</span>
+                    <span id="level-description">Easy - 3 pairs (6 cards) - 3x2 grid</span>
                 </div>
             </div>
             
@@ -98,9 +80,19 @@
                     <span id="score">0</span>
                 </div>
                 <div class="stat-item">
-                    <i class="fas fa-trophy"></i>
+                    <i class="fas fa-layer-group"></i>
                     <span id="level">1</span>
                 </div>
+            </div>
+            
+            <!-- Game Controls -->
+            <div class="game-controls">
+                <button id="start-btn" class="btn btn-primary">
+                    <i class="fas fa-play"></i> Start Game
+                </button>
+                <button id="reset-btn" class="btn btn-secondary">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
             </div>
         </header>
 
@@ -117,45 +109,53 @@
             </div>
         </div>
 
-        <!-- Game Controls -->
-        <div class="game-controls">
-            <button id="start-btn" class="btn btn-primary">
-                <i class="fas fa-play"></i> Start Game
+        <!-- Music Controls -->
+        <div class="music-controls">
+            <button id="music-toggle" class="btn btn-music">
+                <i class="fas fa-volume-mute"></i>
+                <span>Music: OFF</span>
             </button>
-            <button id="reset-btn" class="btn btn-secondary">
-                <i class="fas fa-redo"></i> Reset
-            </button>
-            <button id="next-level-btn" class="btn btn-success" style="display: none;">
-                <i class="fas fa-arrow-up"></i> Next Level
-            </button>
+            <div class="music-volume-control">
+                <label for="music-volume-slider">Music Volume:</label>
+                <input type="range" id="music-volume-slider" min="0" max="100" value="50">
+                <span id="music-volume-value">50%</span>
+            </div>
         </div>
 
         <!-- Game Board -->
-        <div class="game-board" id="game-board">
+        <main class="game-board level-1" id="game-board">
             <!-- Cards will be dynamically generated here -->
-        </div>
+        </main>
 
         <!-- Game Over Modal -->
         <div id="game-over-modal" class="modal">
             <div class="modal-content">
-                <h2>Congratulations, <span id="winner-name">Player</span>!</h2>
-                <div class="level-completion">
-                    <h3>Level <span id="completed-level">1</span> Complete!</h3>
-                    <div class="level-stars">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
+                <h2>🎉 Congratulations! 🎉</h2>
+                <div class="winner-info">
+                    <p>Winner: <span id="winner-name">Player</span></p>
+                    <p>Level: <span id="completed-level">1</span></p>
                 </div>
                 <div class="final-stats">
-                    <p>Time: <span id="final-time">00:00</span></p>
-                    <p>Moves: <span id="final-moves">0</span></p>
-                    <p>Score: <span id="final-score">0</span></p>
-                    <p>Level Bonus: <span id="level-bonus">+0</span></p>
+                    <div class="stat-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Time: <span id="final-time">00:00</span></span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-mouse-pointer"></i>
+                        <span>Moves: <span id="final-moves">0</span></span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-star"></i>
+                        <span>Score: <span id="final-score">0</span></span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-gift"></i>
+                        <span>Level Bonus: <span id="level-bonus">0</span></span>
+                    </div>
                 </div>
                 <div class="modal-buttons">
                     <button id="play-again-btn" class="btn btn-primary">
-                        <i class="fas fa-play"></i> Play Again
+                        <i class="fas fa-redo"></i> Play Again
                     </button>
                     <button id="next-level-btn-modal" class="btn btn-success">
                         <i class="fas fa-arrow-up"></i> Next Level
@@ -168,27 +168,23 @@
         <div class="instructions">
             <h3>How to Play:</h3>
             <ul>
-                <li>Enter your name and click "Save" to personalize your game</li>
-                <li>Select a difficulty level (1-5) - higher levels have more cards</li>
-                <li>Adjust sound settings using the volume controls</li>
+                <li>Choose your difficulty level (3 levels available)</li>
                 <li>Click "Start Game" to begin</li>
-                <li>Flip two cards at a time to find matching pairs</li>
-                <li>Matched pairs stay face up</li>
-                <li>Complete all pairs to advance to the next level!</li>
+                <li>Click on cards to flip them and reveal AOL images</li>
+                <li>Find matching pairs to score points</li>
+                <li>Complete all pairs to advance to the next level</li>
+                <li>Toggle background music and sound effects as desired</li>
             </ul>
-            <div class="level-details">
-                <h4>Level Details:</h4>
-                <ul>
-                    <li><strong>Level 1:</strong> 4x4 grid (8 pairs, 16 cards) - Easy</li>
-                    <li><strong>Level 2:</strong> 6x6 grid (18 pairs, 36 cards) - Medium</li>
-                    <li><strong>Level 3:</strong> 7x7 grid (24 pairs, 49 cards) - Hard</li>
-                    <li><strong>Level 4:</strong> 8x8 grid (32 pairs, 64 cards) - Expert</li>
-                    <li><strong>Level 5:</strong> 9x9 grid (40 pairs, 81 cards) - Master</li>
-                </ul>
-            </div>
         </div>
     </div>
 
+    <!-- Background Music -->
+    <audio id="background-music" loop>
+        <source src="audio/jeet-mobile.m4a" type="audio/mp4">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- Game Logic -->
     <script src="app.js"></script>
 </body>
 </html>
